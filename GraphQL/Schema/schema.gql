@@ -1,0 +1,9 @@
+type Query {
+    hello: String,
+    test: Jasonista
+}
+
+type Jasonista {
+    name: String,
+}
+
