@@ -70,6 +70,7 @@ class Session {
         this.conversationLog = Array();
 
         this.state = "ready";
+        this.result = undefined;
     }
 
     // Getter for conversationLog
@@ -149,6 +150,7 @@ class Session {
                     } else {
                         this.runParseAgent().then(parsed => {
                             console.log(parsed);
+                            this.result = parsed.message.content;
                             resolve(parsed.message.content);
                         });
                     }
@@ -168,6 +170,7 @@ class Session {
     // OUTPUT:
     // If EOC flag found, changes session state to done.
     // Formats conversation log and passes it off to parser agent to generate CSV.
+    // Sets session state to "done" if EOC is found.
     checkForEOC(content) {
         if (content.includes("[END OF CONVERSATION]")) {
             this.state = "done"
@@ -178,6 +181,10 @@ class Session {
         return false;
     }
 
+    // Dispatches the Parse Agent.
+    // OUTOUT:
+    // Returns a promise, containing the plaintext CSV results.
+    // Promise is rejected if session is not in the "done" state.
     runParseAgent() {
         let prom = new Promise((resolve, reject) => {
             if (this.state == "done") {

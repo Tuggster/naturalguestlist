@@ -1,6 +1,6 @@
 type Mutation {
     createSession(name: String): UserSession,
-    appendThread(id: String, request: String): String
+    appendThread(id: String, request: String): UserSession
 }
 
 type Query {
@@ -16,7 +16,8 @@ type UserSession {
     name: String,
     openAIInit: Boolean,
     conversationLog: [OpenAIMessage!]!,
-    state: String
+    state: String,
+    result: String
 }
 
 type OpenAIMessage {

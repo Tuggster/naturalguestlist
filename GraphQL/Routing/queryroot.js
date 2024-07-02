@@ -23,7 +23,7 @@ let root = {
     appendThread({ id, request }) {
         let session = sessions.getSession(id);
         return session.appendGuideThread(request).then(res => {
-            return res;
+            return session;
         });
     },
 

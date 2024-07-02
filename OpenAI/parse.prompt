@@ -4,6 +4,7 @@ first name, last name, email, party
 All columns are optional, as long as AT LEAST one column has a value.
 The party column denotes grouping of guests. Even if it is not explicitly stated, you are permitted to make assumptions about grouping.
 The party value should be a unique identifier common between members of groups. Make it descriptive but short.
+For example, "bride's family," or "john's friends"
 Plus-ones, or unknown guests, can be an empty column in the same party as the person bringing them along.
 Output ONLY a CSV file, no other tokens at all.
-Exclude line breaks.
+Do not include ANY control characters or line breaks like \n or carriage returns.

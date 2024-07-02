@@ -11,6 +11,11 @@ class OpenAIParseAgent {
         this.id = id;
     }
 
+    // Contacts the OpenAI API and creates an agent to parse the conversation into a CSV.
+    // ARGS:
+    // conversationLog -- The conversation log to be converted to CSV.
+    // OUTPUT: A promise. Resolved once the results are retrieved from the API.
+    // Resolve arguments contain a plaintext version of the CSV results.
     getCSVFromLog(conversationLog) {
         let prom = new Promise(async (resolve, reject) => {
 
@@ -33,6 +38,11 @@ class OpenAIParseAgent {
         return prom;
     }
 
+    // Converts the conversation log to a plaintext format suitable for the parsing agent.
+    // ARGS:
+    // conversationLog -- Takes a session conversation log
+    // OUTPUT:
+    // Returns a string, containing a formatted version of the input log.
     logToReadableFormat(conversationLog) {
         let content = "";
         conversationLog.forEach(element => {
