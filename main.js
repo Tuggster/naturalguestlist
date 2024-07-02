@@ -16,7 +16,7 @@ let schemaFile = fs.readFileSync(`${schemaFolder}/${schemaName}`);
 var schema = buildSchema(schemaFile.toString())
  
 // Import our resolver.
-const resolver = require("./queryroot.js")
+const resolver = require("./GraphQL/Routing/queryroot.js")
 
 // The root provides a resolver function for each API endpoint
 var root = resolver.root;

@@ -1,9 +1,14 @@
+type Mutation {
+    createSession(id: String, name: String): UserSession
+}
+
 type Query {
-    hello: String,
-    test: Jasonista
+    getSession(id: String): UserSession
 }
 
-type Jasonista {
-    name: String,
-}
+# Custom Types
 
+type UserSession {
+    id: ID,
+    name: String
+}
