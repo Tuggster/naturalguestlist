@@ -5,8 +5,8 @@ type Mutation {
 
 type Query {
     getSession(id: String): UserSession,
-    getLog(id: String): [String],
-    getLatest(id: String): String,
+    getLog(id: String): [OpenAIMessage],
+    getLatest(id: String): OpenAIMessage,
 }
 
 # Custom Types
@@ -15,16 +15,10 @@ type UserSession {
     id: ID!,
     name: String,
     openAIInit: Boolean,
-    conversationLog: [String!]
-}
-
-enum OpenAIRole {
-    assistant,
-    user,
-    system
+    conversationLog: [OpenAIMessage!]!
 }
 
 type OpenAIMessage {
-    role: OpenAIRole,
-    content: String
+    role: String!,
+    content: String!
 }

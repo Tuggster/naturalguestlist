@@ -5,30 +5,59 @@ let guideAgent = openaiInterface.OpenAIGuideAgent;
 class SessionManager {
     static sessions = {};
 
+    // Creates a session via name and stores in SessionManger
+    // ARGS:
+    // Name -- Any human-readable name, used for keeping track of sessions.
+    // OUTPUT:
+    // Stores new session in sessions, returns session.
     static createSession(name) {
-        let id = uuidv4();
-        if (this.sessions[id] === undefined) {
+        let prom = new Promise((resolve, reject) => {
+            let id = uuidv4();
+
+            // In the event of (almost entirely impossible) UUID collisions, reroll
+            while (typeof this.sessions[id] !== 'undefined' && this.sessions[id]) {
+                id = uuidv4();
+            }
+
             let newSession = new Session(id, name);
 
-            newSession.initAgents();
+            newSession.initAgents().then(res => {
+                this.sessions[id] = newSession;
+                console.log(this.sessions[id]);
 
-            this.sessions[id] = newSession;
-            console.log(this.sessions[id]);
+                newSession.beginConversation().then(res => {
+                    resolve(newSession);
+                });
+            });
 
-            return newSession;
-        } else {
-            throw new Error("Session ID Conflict")
-        }
+        })
+
+        return prom;
     }
 
+    // Gets a session by ID.
+    // ARGS:
+    // id -- Session ID for retrieval.
+    // OUTPUT:
+    // Returns Session with matching id.
+    // Throws error if no session found.
     static getSession(id) {
         let session = this.sessions[id];
 
-        return session;
+
+        if (session) {
+            return session;
+        } else {
+            throw new Error("No matching session found.")
+        }
     }
 }
 
 class Session {
+    // Construct a Session object.
+    // Args:
+    // ID -- Session ID
+    // Name -- Session human-readable name
     constructor(id, name) {
         this.id = id;
         this.name = name;
@@ -37,39 +66,89 @@ class Session {
         this.guideAgent = undefined;
         this.parseAgent = undefined;
         this.conversationLog = Array();
+
+        this.state = "ready";
     }
 
+    // Getter for conversationLog
+    getLog() {
+        return this.conversationLog;
+    }
+
+    // Initialize all OpenAI Agents and set ready flag.
+    // OUTPUT:
+    // Sets ready flag. Stores guideAgent and parseAgent
     initAgents() {
-        this.guideAgent = new guideAgent(this.id);
-        this.guideAgent.initAgent().then(res => {
-            this.openAIInit = true;
-            console.log(res);
-        });
+        let prom = new Promise((resolve, reject) => {
+            this.guideAgent = new guideAgent(this.id);
+            this.guideAgent.initAgent().then(res => {
+                this.openAIInit = true;
+                console.log(res);
+                resolve(res);
+            });
+        })
+
+        return prom;
     }
 
+    // Begins the conversation and generates the initial response from the Assistant.
+    // OUTPUT:
+    // Returns a promise, resolves with no parameters once the first generation is complete.
+    beginConversation() {
+        let prom = new Promise((resolve, reject) => {
+            this.appendGuideThread("From now on you will be speaking to the client. Begin conversation.").then((res) => {
+                resolve();
+            });
+        })
+
+        return prom;
+    }
+
+    // Appends a new message to the Guide Agent's thread and runs the thread.
+    // ARGS:
+    // Content -- Message to write to the OpenAI Thread.
+    // OUTPUT:
+    // Promise resolved on thread run success. Outputs response from the model.
+    // Promise rejected if Guide Agent is not initialized.
+    // Puts user request and assistant response in conversation log.
     async appendGuideThread(content) {
-        
+
+        if (this.state != "ready") {
+            throw new Error("Currently waiting.");
+        }
+
+        this.state = "waiting";
         let prom = new Promise(async (resolve, reject) => {
-            if (!this.openAIInit) {
+            // Make sure everything is ready.
+            if (!this.openAIInit || !this.guideAgent) {
                 reject("Not initialized");
                 return;
             }
-    
+
+            // Add our content to the OpenAI Thread
             this.guideAgent.appendThread(content).then(thread => {
+                // Run the thread and await the results
                 this.guideAgent.runThread().then(res => {
                     resolve(res);
+                    this.state = "ready";
+                    this.conversationLog.push({
+                        role: "USER",
+                        content
+                    });
+                    this.conversationLog.push({
+                        role: "ASSISTANT",
+                        content: res
+                    });
                     console.log("resolved!")
                     console.log(res);
                 });
-            })    
+            })
 
         })
 
         return prom;
     }
 }
-
-
 
 module.exports = {
     SessionManager
