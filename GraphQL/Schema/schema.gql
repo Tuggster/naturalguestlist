@@ -1,14 +1,30 @@
 type Mutation {
-    createSession(id: String, name: String): UserSession
+    createSession(name: String): UserSession,
+    appendThread(id: String, request: String): String
 }
 
 type Query {
-    getSession(id: String): UserSession
+    getSession(id: String): UserSession,
+    getLog(id: String): [String],
+    getLatest(id: String): String,
 }
 
 # Custom Types
 
 type UserSession {
-    id: ID,
-    name: String
+    id: ID!,
+    name: String,
+    openAIInit: Boolean,
+    conversationLog: [String!]
+}
+
+enum OpenAIRole {
+    assistant,
+    user,
+    system
+}
+
+type OpenAIMessage {
+    role: OpenAIRole,
+    content: String
 }
