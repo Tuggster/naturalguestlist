@@ -15,7 +15,8 @@ type UserSession {
     id: ID!,
     name: String,
     openAIInit: Boolean,
-    conversationLog: [OpenAIMessage!]!
+    conversationLog: [OpenAIMessage!]!,
+    state: String
 }
 
 type OpenAIMessage {

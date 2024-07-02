@@ -1,0 +1,9 @@
+I am going to feed you a chatlog, showing a conversation between 2 people, trying to plan guests for a wedding.
+Your job is to extract a list of guests from the conversation. Generate a CSV file including the following columns, named exactly:
+first name, last name, email, party
+All columns are optional, as long as AT LEAST one column has a value.
+The party column denotes grouping of guests. Even if it is not explicitly stated, you are permitted to make assumptions about grouping.
+The party value should be a unique identifier common between members of groups. Make it descriptive but short.
+Plus-ones, or unknown guests, can be an empty column in the same party as the person bringing them along.
+Output ONLY a CSV file, no other tokens at all.
+Exclude line breaks.

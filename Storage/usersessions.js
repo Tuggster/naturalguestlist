@@ -1,6 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
-let openaiInterface = require('../OpenAI/guideagent.js');
-let guideAgent = openaiInterface.OpenAIGuideAgent;
+let openaiGuide = require('../OpenAI/guideagent.js');
+let openaiParse = require('../OpenAI/parseagent.js');
+let guideAgent = openaiGuide.OpenAIGuideAgent;
+let parseAgent = openaiParse.OpenAIParseAgent;
 
 class SessionManager {
     static sessions = {};
@@ -55,7 +57,7 @@ class SessionManager {
 
 class Session {
     // Construct a Session object.
-    // Args:
+    // ARGS:
     // ID -- Session ID
     // Name -- Session human-readable name
     constructor(id, name) {
@@ -88,6 +90,8 @@ class Session {
             });
         })
 
+        this.parseAgent = new parseAgent(this.id);
+
         return prom;
     }
 
@@ -112,9 +116,8 @@ class Session {
     // Promise rejected if Guide Agent is not initialized.
     // Puts user request and assistant response in conversation log.
     async appendGuideThread(content) {
-
         if (this.state != "ready") {
-            throw new Error("Currently waiting.");
+            throw new Error("Session not ready for input.");
         }
 
         this.state = "waiting";
@@ -129,7 +132,6 @@ class Session {
             this.guideAgent.appendThread(content).then(thread => {
                 // Run the thread and await the results
                 this.guideAgent.runThread().then(res => {
-                    resolve(res);
                     this.state = "ready";
                     this.conversationLog.push({
                         role: "USER",
@@ -141,9 +143,52 @@ class Session {
                     });
                     console.log("resolved!")
                     console.log(res);
+
+                    if (!this.checkForEOC(res)) {
+                        resolve(res);
+                    } else {
+                        this.runParseAgent().then(parsed => {
+                            console.log(parsed);
+                            resolve(parsed.message.content);
+                        });
+                    }
+
                 });
             })
 
+        })
+
+        return prom;
+    }
+
+    // Checks a response for an end of conversation flag
+    // EOC flag indicates that the Guide Agent has finished it's job and that the parse agent needs to step in.
+    // ARGS:
+    // content -- Assistant response to be checked.
+    // OUTPUT:
+    // If EOC flag found, changes session state to done.
+    // Formats conversation log and passes it off to parser agent to generate CSV.
+    checkForEOC(content) {
+        if (content.includes("[END OF CONVERSATION]")) {
+            this.state = "done"
+            console.log("Guide agent finished.");
+            return true;
+        }
+
+        return false;
+    }
+
+    runParseAgent() {
+        let prom = new Promise((resolve, reject) => {
+            if (this.state == "done") {
+                this.parseAgent.getCSVFromLog(this.conversationLog).then(res => {
+                    console.log("parsed!")
+                    console.log(res);
+                    resolve(res);
+                })
+            } else {
+                reject("Not ready!")
+            }
         })
 
         return prom;
