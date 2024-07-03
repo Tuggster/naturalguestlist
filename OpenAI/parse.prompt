@@ -8,3 +8,4 @@ For example, "bride's family," or "john's friends"
 Plus-ones, or unknown guests, can be an empty column in the same party as the person bringing them along.
 Output ONLY a CSV file, no other tokens at all.
 Do not include ANY control characters or line breaks like \n or carriage returns.
+Symbols are not allowed in first or last names. Please simply strip them.
