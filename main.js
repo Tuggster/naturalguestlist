@@ -2,6 +2,7 @@
 var express = require("express")
 var { createHandler } = require("graphql-http/lib/use/express")
 var { buildSchema } = require("graphql")
+var cors = require('cors')
 
 // GraphiQL via ruru
 var { ruruHTML } = require("ruru/server")
@@ -22,6 +23,7 @@ const resolver = require("./GraphQL/Routing/queryroot.js")
 var root = resolver.root;
 
 var app = express()
+app.use(cors())
 
 // Create and use the GraphQL handler.
 app.all(

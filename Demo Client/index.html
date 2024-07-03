@@ -4,8 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Natural Guest List</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="client.js"></script>
 </head>
 <body>
-    
+    <button onclick="currentSession = new SessionManager('Jason'); document.getElementById(`startbtn`).style.visibility ='hidden'"  id="startbtn">Start Session</button>
+    <section class="main">
+        <div class="convo-history"></div>
+        <div class="chatbox">
+            <textarea id="textbox"></textarea>
+            <button class="sendbtn" id="send">Send</button>
+        </div>
+    </section>
+
+    <template id="message-template">
+        <div class="user" id="outer">
+            <div>
+                <p>Beans!</p>
+            </div>
+        </div>
+    </template>
+
+    <template id="download-template">
+        <div class="assistant" id="outer">
+            <div>
+                <h2>File ready for download!</h2>
+                <h3>hsdajsdjo</h3>
+                <button id="download-btn">Download CSV</button>
+            </div>
+        </div>
+
+    </template>
+
+
+
 </body>
 </html>

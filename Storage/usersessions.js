@@ -136,11 +136,13 @@ class Session {
                     this.state = "ready";
                     this.conversationLog.push({
                         role: "USER",
-                        content
+                        content,
+                        index: this.conversationLog.length
                     });
                     this.conversationLog.push({
                         role: "ASSISTANT",
-                        content: res
+                        content: res,
+                        index: this.conversationLog.length
                     });
                     console.log("resolved!")
                     console.log(res);
