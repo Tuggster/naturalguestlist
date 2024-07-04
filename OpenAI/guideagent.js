@@ -56,6 +56,10 @@ class OpenAIGuideAgent {
             throw new Error("Agent not initialized.")
         }
 
+        if (!content || content.length === 0) {
+            throw new Error("Zero length messages not allowed.")
+        }
+
         let prom = new Promise(async (resolve, reject) => {
             const message = await openai.beta.threads.messages.create(
                 this.thread.id,

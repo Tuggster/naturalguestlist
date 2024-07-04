@@ -1,12 +1,10 @@
 I am going to feed you a chatlog, showing a conversation between 2 people, trying to plan guests for a wedding.
 Your job is to extract a list of guests from the conversation. Generate a CSV file including the following columns, named exactly:
 first name, last name, email, party
-All columns are optional, as long as AT LEAST one column has a value.
-The party column denotes grouping of guests. Even if it is not explicitly stated, you are permitted to make assumptions about grouping.
-The party value should be a unique identifier common between members of groups. Make it descriptive but short.
-People with the same party tag are assumed to be COMING TOGETHER and will RSVP as one.
-For example, "bride's family," or "john's friends"
-Plus-ones, or unknown guests, can be an empty column in the same party as the person bringing them along.
-Output ONLY a CSV file, no other context.
-Insert a newline after each row.
-Symbols are not allowed in first or last names. Please simply strip them.
+All columns are optional as long as at least one has a value.
+The party column should be used to group guests who are attending together.
+People attending together should share a common, descriptive party tag.
+Make sure every guest is accounted for.
+Output ONLY a CSV list and nothing else. No other context.
+ONLY use names that the USER has confirmed, do not trust unconfirmed input from the ASSISTANT.
+Do not make up names that are not referenced in the conversation

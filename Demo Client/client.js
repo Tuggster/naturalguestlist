@@ -38,12 +38,14 @@ class gQLClient {
 
 
     // Creates a session.
+    // ARGS:
+    // name: Session friendly-name
     // OUTPUT:
     // Returns a promise, fulfilled with the session id, state, and conversation log on success.
-    static createSession() {
+    static createSession(name) {
         let query = `
-        mutation {
-            createSession(name: "demo session") {
+        mutation ($name: String){
+            createSession(name: $name) {
                 id,
                 state,
                 conversationLog {
@@ -54,7 +56,9 @@ class gQLClient {
             }
         }`
 
-        return this.makeRequest(query);
+        return this.makeRequest(query, {
+            name
+        });
     }
 
     // Get a session from the server.
@@ -123,7 +127,7 @@ class SessionManager {
         this.id = undefined;
         this.state = "init";
         this.results = undefined;
-        gQLClient.createSession().then(res => {
+        gQLClient.createSession(name).then(res => {
             console.log(res.createSession.id)
             this.id = res.createSession.id;
             this.conversationLog = res.createSession.conversationLog;
@@ -156,7 +160,11 @@ class SessionManager {
                 this.state = "done";
                 this.results = session.result;
                 let fileURL = this.saveOutputToCSV();
-                DisplayManager.addNewMessages(this.conversationLog);
+                try {
+                    DisplayManager.addNewMessages(this.conversationLog);
+                } catch (error) {
+                    console.log(error);
+                }
                 DisplayManager.addDownloadLink(fileURL);
             } else {
                 DisplayManager.addNewMessages(this.conversationLog);
@@ -211,12 +219,33 @@ window.addEventListener("load", event => {
     let sendButton = document.getElementById("send");
     let textbox = document.getElementById("textbox");
 
+    let main = document.querySelector(".main");
+    let landing = document.querySelector(".landing");
+
+    let startBtn = landing.querySelector("button");
+    let name = landing.querySelector("input");
+    startBtn.addEventListener("click", event => {
+        currentSession = new SessionManager(name.value.trim());
+        main.classList.remove("hidden");
+        landing.classList.add("hidden");
+    })
+
     sendButton.addEventListener("click", event => {
         if (currentSession) {
             currentSession.sendMessage(textbox.value);
             textbox.value = "";
         }
     })
+
+    textbox.addEventListener("keydown", function(event) {
+        if (event.key === "Enter") {
+            if (currentSession) {
+                event.preventDefault();
+                currentSession.sendMessage(textbox.value);
+                textbox.value = "";
+            }
+        }
+    });
 })
 
 // Static class that manages the UI Elements
@@ -265,6 +294,9 @@ class DisplayManager {
     // OUTPUT:
     // Adds a message to the UI on the appropriate side.
     static addMessage(message) {
+        if (!message || message.content.length == 0) {
+            throw new Error("Zero-length messages not allowed.");
+        }
         console.log(message, this.messages);
         this.messages.push(message);
 
@@ -281,6 +313,7 @@ class DisplayManager {
         console.log(template, outer, inner);
 
         this.messageContainer.appendChild(template);
+        window.scrollTo(0, this.messageContainer.getBoundingClientRect().height);
     }
 
     // Adds a download link to the UI.

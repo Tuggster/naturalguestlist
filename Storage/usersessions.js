@@ -4,6 +4,11 @@ let openaiParse = require('../OpenAI/parseagent.js');
 let guideAgent = openaiGuide.OpenAIGuideAgent;
 let parseAgent = openaiParse.OpenAIParseAgent;
 
+// For Session Logging
+const files = require('fs')
+const path = require('path');
+const { time } = require('console');
+
 class SessionManager {
     static sessions = {};
 
@@ -121,13 +126,20 @@ class Session {
             throw new Error("Session not ready for input.");
         }
 
-        this.state = "waiting";
+        if (!content || content.length === 0) {
+            console.log("error.")
+            throw new Error("Zero-length messages not allowed.")
+        }
+
         let prom = new Promise(async (resolve, reject) => {
             // Make sure everything is ready.
             if (!this.openAIInit || !this.guideAgent) {
                 reject("Not initialized");
                 return;
             }
+
+            this.state = "waiting";
+            console.log("waiting.")
 
             // Add our content to the OpenAI Thread
             this.guideAgent.appendThread(content).then(thread => {
@@ -154,10 +166,13 @@ class Session {
                             console.log(parsed);
                             this.result = parsed.message.content;
                             resolve(parsed.message.content);
+                            this.saveSessionLogs();
                         });
                     }
 
                 });
+            }).catch(error => {
+                reject(error);
             })
 
         })
@@ -184,7 +199,7 @@ class Session {
     }
 
     // Dispatches the Parse Agent.
-    // OUTOUT:
+    // OUTPUT:
     // Returns a promise, containing the plaintext CSV results.
     // Promise is rejected if session is not in the "done" state.
     runParseAgent() {
@@ -201,6 +216,43 @@ class Session {
         })
 
         return prom;
+    }
+
+    saveSessionLogs() {
+        let sessionMetadata = {
+            sessionID: this.id,
+            userName: this.name,
+            sessionMessageCount: this.conversationLog.length,
+            openAIGuideID: this.guideAgent.agent.id,
+            time: new Date()
+        }
+        let sessionChatlog = this.conversationToLog();
+
+        let loggingPath = path.join(__dirname, `../logs/${this.name}`)
+        if (!files.existsSync(loggingPath)) {
+            files.mkdirSync(loggingPath);
+        } else {
+            if (!files.existsSync(`${loggingPath}/${this.id}`))
+            files.mkdirSync(`${loggingPath}/${this.id}`);
+            loggingPath = `${loggingPath}/${this.id}`;
+        }
+
+        files.writeFileSync(`${loggingPath}/sessioninfo.log`, JSON.stringify(sessionMetadata));
+        files.writeFileSync(`${loggingPath}/chatlog.log`, sessionChatlog);
+        if (this.state == "done") {
+            files.writeFileSync(`${loggingPath}/output.log`, this.result.toString());
+        }
+
+
+    }
+
+    conversationToLog() {
+        let log = "";
+        this.conversationLog.forEach(message => {
+            log += (message.role == "USER" ? this.name : "Guide Agent") + ":\n";
+            log += message.content + "\n\n";
+        });
+        return log;
     }
 }
 

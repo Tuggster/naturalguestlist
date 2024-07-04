@@ -10,11 +10,16 @@ var { ruruHTML } = require("ruru/server")
 const path = require("path")
 const fs = require("fs");
 
+if (!fs.existsSync('./logs')) {
+    fs.mkdirSync('./logs');
+}
+
+
 // Pull schema in from schema.gql
 let schemaFolder = path.join(__dirname, "./GraphQL/Schema");
 let schemaName = "schema.gql";
 let schemaFile = fs.readFileSync(`${schemaFolder}/${schemaName}`);
-var schema = buildSchema(schemaFile.toString())
+var schema = buildSchema(schemaFile.toString());
 
 // Import our resolver.
 const resolver = require("./GraphQL/Routing/queryroot.js")

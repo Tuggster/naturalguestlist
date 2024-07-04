@@ -8,11 +8,23 @@
     <script src="client.js"></script>
 </head>
 <body>
-    <button onclick="currentSession = new SessionManager('Jason'); document.getElementById(`startbtn`).style.visibility ='hidden'"  id="startbtn">Start Session</button>
-    <section class="main">
+    <section class="landing">
+        <div>
+            <h1>Welcome!</h1>
+            <h3>Using AI to make guest lists more intuitive.</h3>
+            <p>Enter your name to start. Conversation logs and final results will be recorded.</p>
+            <br>
+            <label for="">
+                <input type="text" placeholder="What's Your Name?">
+                <button>Let's Go!</button>
+            </label>
+        </div>
+    </section>
+
+    <section class="main hidden">
         <div class="convo-history"></div>
         <div class="chatbox">
-            <textarea id="textbox"></textarea>
+            <textarea id="textbox" rows="1"></textarea>
             <button class="sendbtn" id="send">Send</button>
         </div>
     </section>
