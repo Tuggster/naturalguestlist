@@ -58,7 +58,8 @@ class SessionManager {
 
         let currentDate = new Date();
         console.log("collecting garbage at: " + currentDate);
-        this.sessions.forEach(session => {
+        Object.keys(this.sessions).forEach(key => {
+            let sessions = this.sessions[key];
             let sessionExpirationTime = session.lastInteraction.getTime() + (garbageCollectorInterval * 1000 * 60);
             if (currentDate > sessionExpirationTime) {
                 this.killSession(session.id);
