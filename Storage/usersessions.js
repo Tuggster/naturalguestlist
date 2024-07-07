@@ -52,7 +52,7 @@ class SessionManager {
 
     triggerGarbageCollector() {
 
-        if (!sessions) {
+        if (!this.sessions) {
             return;
         }
 
