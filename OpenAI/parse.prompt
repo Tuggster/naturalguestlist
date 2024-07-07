@@ -8,3 +8,26 @@ Make sure every guest is accounted for.
 Output ONLY a CSV list and nothing else. No other context.
 ONLY use names that the USER has confirmed, do not trust unconfirmed input from the ASSISTANT.
 Do not make up names that are not referenced in the conversation
+
+Here are some examples for identifying and formatting guests from the chatlog (input and output):
+
+In:
+I'll bring my dad, James Phillips jp@example.com and my mom Lisa Phillips
+Out:
+James,Phillips,jp@example.com,Parents
+Lisa,Phillips,,Parents
+
+In:
+charlotte phillips cp@icloud.net is my sister and she's bringing her friend zoe
+Out:
+Charlotte,Phillips,cp@icloud.net,Charlotte's Party
+Zoe,,,siblings
+
+In:
+My bride's siblings are jason, miranda, and joey smith. Her parents are john and beth roberts.
+Out:
+Jason,Smith,,Bride's family
+Miranda,Smith,,Bride's family
+Joey,Smith,,Bride's family
+John,Roberts,,Bride's family
+Beth,Roberts,,Bride's family

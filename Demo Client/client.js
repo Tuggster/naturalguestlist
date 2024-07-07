@@ -85,6 +85,19 @@ class gQLClient {
         return this.makeRequest(query, { id });
     }
 
+    static killSession(id) {
+        let query = `
+        mutation ($id: String){
+            killSession(id: $id) {
+                name
+            }
+        }`
+
+
+        return this.makeRequest(query, { id });
+    }
+
+
     // Sends a message to the Guide Agent and returns the new state of the session.
     // ARGS:
     // ID -- The ID of the session to send a message to.
@@ -114,7 +127,6 @@ currentSession = undefined;
 
 // Instances of the SessionManager class track the state of a Session.
 class SessionManager {
-
     // Construct a new SessionManager
     // ARGS:
     // name -- Friendly name for the session to be stored on the server.
@@ -180,6 +192,11 @@ class SessionManager {
         return gQLClient.getSession(this.id);
     }
 
+    // Kills the current session.
+    killSession() {
+        gQLClient.killSession(this.id);
+    }
+
     // Pulls down the current state of the chatlog.
     // OUTPUT:
     // No returns.
@@ -207,6 +224,15 @@ class SessionManager {
     }
 }
 
+
+// Page Unload Listener
+// Helps kill unused sessions
+window.onbeforeunload = function() {  
+    if (currentSession) {
+        currentSession.killSession();
+    }
+    return undefined;
+ };
 
 // Page load setup
 // Loads some refrences to the UI
@@ -245,7 +271,7 @@ window.addEventListener("load", event => {
                 textbox.value = "";
             }
         }
-    });
+    }); 
 })
 
 // Static class that manages the UI Elements

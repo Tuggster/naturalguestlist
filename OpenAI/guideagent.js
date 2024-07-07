@@ -24,7 +24,7 @@ class OpenAIGuideAgent {
     // Creates the agent and stores it within this object.
     // Returns a promise.
     // Resolved when assistant successfully created.
-    async initAgent() {
+    initAgent() {
         let prom = new Promise(async (resolve, reject) => {
             const assistant = await openai.beta.assistants.create({
                 name: `Wedding Planner ${this.sessionID}`,
@@ -45,13 +45,17 @@ class OpenAIGuideAgent {
         return prom;
     }
 
+    async cleanup() {
+        await openai.beta.assistants.del(this.agent.id);
+    }
+
     // Adds a new message onto the Assistant's thread.
     // ARGS:
     // content -- The content of the message to send to the Assistant.
     // role -- "Role" Metadata for the content. System, User, or Assistant.
     // OUTPUT:
     // Returns promise. Promise resolved when thread has been successfully updated.
-    async appendThread(content, role) {
+    appendThread(content, role) {
         if (!this.initialized) {
             throw new Error("Agent not initialized.")
         }
@@ -80,7 +84,7 @@ class OpenAIGuideAgent {
     // OUTPUT:
     // Returns a promise. Resolved once LLM finishes generating a response.
     // Returns plain-text response from the assistant.
-    async runThread() {
+    runThread() {
         if (!this.initialized) {
             throw new Error("Agent not initialized.")
         }

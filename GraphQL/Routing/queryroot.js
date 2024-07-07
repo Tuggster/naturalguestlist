@@ -1,6 +1,6 @@
-const sessions = require("../../Storage/usersessions").SessionManager;
+const { SessionManager } = require("../../Storage/usersessions");
 
-console.log(sessions)
+let sessions = new SessionManager();
 
 // GraphQL Resolvers
 let root = {
@@ -24,6 +24,16 @@ let root = {
         let session = sessions.createSession(name);
 
         return session;
+    },
+
+    // Resolver for killSession
+    // Kills a session, freeing up it's memory.
+    // ARGS:
+    // id -- ID of the session to kill.
+    // OUTPUT:
+    // Asks the SessionManager to kill the requested
+    killSession({ id }) {
+        SessionManager.killSession(id);
     },
 
     // Add a new message onto the session's GuideAgent thread.
@@ -61,7 +71,7 @@ let root = {
         let session = sessions.getSession(id);
         let log = session.conversationLog;
         return log[log.length - 1];
-    }
+    },
 }
 
 module.exports = {

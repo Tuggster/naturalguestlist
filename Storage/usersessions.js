@@ -8,16 +8,25 @@ let parseAgent = openaiParse.OpenAIParseAgent;
 const files = require('fs')
 const path = require('path');
 const { time } = require('console');
+const { setTimeout } = require('timers');
+
+const garbageCollectorInterval = 5; // Garbage Collector Interval in minutes.
 
 class SessionManager {
-    static sessions = {};
+
+    constructor() {
+        this.sessions = {};
+        this.gcTimeout = setTimeout(() => {
+            this.triggerGarbageCollector();
+        }, garbageCollectorInterval * 1000 * 60);
+    }
 
     // Creates a session via name and stores in SessionManger
     // ARGS:
     // Name -- Any human-readable name, used for keeping track of sessions.
     // OUTPUT:
     // Stores new session in sessions, returns session.
-    static createSession(name) {
+    createSession(name) {
         let prom = new Promise((resolve, reject) => {
             let id = uuidv4();
 
@@ -36,10 +45,37 @@ class SessionManager {
                     resolve(newSession);
                 });
             });
-
         })
 
         return prom;
+    }
+
+    triggerGarbageCollector() {
+
+        if (!sessions) {
+            return;
+        }
+
+        let currentDate = new Date();
+        console.log("collecting garbage at: " + currentDate);
+        this.sessions.forEach(session => {
+            let sessionExpirationTime = session.lastInteraction.getTime() + (garbageCollectorInterval * 1000 * 60);
+            if (currentDate > sessionExpirationTime) {
+                this.killSession(session.id);
+                console.log("GC killed session: " + session.name);
+            }
+        });
+    }
+
+    killSession(id) {
+        let session = this.sessions[id];
+
+        if (session) {
+            session.cleanup();
+            delete this.sessions[id];
+        } else {
+            throw new Error("No session to kill.")
+        }
     }
 
     // Gets a session by ID.
@@ -48,7 +84,7 @@ class SessionManager {
     // OUTPUT:
     // Returns Session with matching id.
     // Throws error if no session found.
-    static getSession(id) {
+    getSession(id) {
         let session = this.sessions[id];
 
 
@@ -75,6 +111,7 @@ class Session {
         this.conversationLog = Array();
 
         this.state = "ready";
+        this.lastInteraction = new Date();
         this.result = undefined;
     }
 
@@ -114,6 +151,12 @@ class Session {
         return prom;
     }
 
+    // Kills sessions with OpenAI and sets session state to done.
+    async cleanup() {
+        this.guideAgent.cleanup();
+        this.state = "done";
+    }
+
     // Appends a new message to the Guide Agent's thread and runs the thread.
     // ARGS:
     // Content -- Message to write to the OpenAI Thread.
@@ -121,7 +164,7 @@ class Session {
     // Promise resolved on thread run success. Outputs response from the model.
     // Promise rejected if Guide Agent is not initialized.
     // Puts user request and assistant response in conversation log.
-    async appendGuideThread(content) {
+    appendGuideThread(content) {
         if (this.state != "ready") {
             throw new Error("Session not ready for input.");
         }
@@ -169,6 +212,8 @@ class Session {
                             this.saveSessionLogs();
                         });
                     }
+
+                    this.lastInteraction = new Date();
 
                 });
             }).catch(error => {

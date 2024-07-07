@@ -1,5 +1,6 @@
 type Mutation {
     createSession(name: String): UserSession,
+    killSession(id: String): UserSession,
     appendThread(id: String, request: String): UserSession
 }
 
