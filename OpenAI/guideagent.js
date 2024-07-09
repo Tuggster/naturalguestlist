@@ -36,7 +36,6 @@ class OpenAIGuideAgent {
 
             this.agent = assistant;
             this.thread = thread;
-            console.log(assistant);
 
             resolve("success")
             this.initialized = true;
@@ -73,7 +72,6 @@ class OpenAIGuideAgent {
                 }
             );
 
-            console.log(message);
             resolve(message);
         })
 
@@ -95,10 +93,7 @@ class OpenAIGuideAgent {
                 assistant_id: this.agent.id
               })
                 .on('event', (event) => {
-                    console.log(event.event);
                     if (event.event == "thread.message.completed") {
-                        console.log("COMPLETED!!!!");
-                        console.log(event.data.content[0].text.value);
                         resolve(event.data.content[0].text.value);
                     }
                 })

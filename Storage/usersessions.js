@@ -39,7 +39,6 @@ class SessionManager {
 
             newSession.initAgents().then(res => {
                 this.sessions[id] = newSession;
-                console.log(this.sessions[id]);
 
                 newSession.beginConversation().then(res => {
                     resolve(newSession);
@@ -88,7 +87,6 @@ class SessionManager {
     getSession(id) {
         let session = this.sessions[id];
 
-
         if (session) {
             return session;
         } else {
@@ -129,7 +127,6 @@ class Session {
             this.guideAgent = new guideAgent(this.id);
             this.guideAgent.initAgent().then(res => {
                 this.openAIInit = true;
-                console.log(res);
                 resolve(res);
             });
         })
@@ -183,7 +180,6 @@ class Session {
             }
 
             this.state = "waiting";
-            console.log("waiting.")
 
             // Add our content to the OpenAI Thread
             this.guideAgent.appendThread(content).then(thread => {
@@ -200,14 +196,11 @@ class Session {
                         content: res,
                         index: this.conversationLog.length
                     });
-                    console.log("resolved!")
-                    console.log(res);
 
                     if (!this.checkForEOC(res)) {
                         resolve(res);
                     } else {
                         this.runParseAgent().then(parsed => {
-                            console.log(parsed);
                             this.result = parsed.message.content;
                             resolve(parsed.message.content);
                             this.saveSessionLogs();
