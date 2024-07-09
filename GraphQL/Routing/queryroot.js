@@ -19,7 +19,8 @@ let root = {
     // ARGS:
     // name -- Name of the user / session.
     // OUTPUT:
-    // Creates a session. Returns it, and stores it in SessionManager.
+    // Creates a session.
+    // Returns a promise that resolves to the session once it's initialized.
     createSession({ name }) {
         let session = sessions.createSession(name);
 
